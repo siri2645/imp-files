@@ -1,0 +1,41 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  annotations:
+    prometheus-operator-validated: "true"
+  generation: 2
+  labels:
+    anaged-by: prometheus-operator
+    prometheus-name: monitoring-prometheus
+    role: alert-rules
+  name: eccs-prometheus-rules
+  namespace: prometheus-operator
+  resourceVersion: "34741"
+spec:
+  groups:
+  - name: Kubernetes-Alerts
+    rules:
+    - alert: KubePodCrashLooping
+      annotations:
+        description: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container
+          }}) is in waiting state (reason: "CrashLoopBackOff").'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodcrashlooping
+        summary: Pod is crash looping.
+      expr: max_over_time(kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff",
+        job="kube-state-metrics", namespace=~".*"}[5m]) >= 1
+      for: 15m
+      labels:
+        severity: critical
+        namespace: prometheus-operator
+        alertname: prometheus-alert
+    - alert: PodRestartHigh
+      annotations:
+          summary: "Pod Restart Alert"
+          description: "Pod {{ $labels.pod }} has restarted more than 2 times in the last hour."
+      expr: sum_over_time(kube_pod_container_status_restarts_total[5m]) > 2
+      for: 5m
+      labels:
+        severity: critical
+        namespace: prometheus-operator
+        alertname: prometheus-alert
+        
