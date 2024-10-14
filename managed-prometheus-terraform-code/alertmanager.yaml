@@ -1,0 +1,12 @@
+alertmanager_config: |
+  route:
+    receiver: 'receiver_name'
+  receivers:
+    - name: 'default'
+      sns_configs:
+      - topic_arn: arn:aws:sns:us-west-2:248189939481:demo
+        sigv4:
+          region: us-east-2
+        attributes:
+          key: key1
+          value: value1
