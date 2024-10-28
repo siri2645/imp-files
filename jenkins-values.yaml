@@ -534,7 +534,24 @@ controller:
             perBuildMetrics: false
             processingDisabledBuilds: false
             useAuthenticatedEndpoint: false
-        jobs:
+        jobs:      
+          - script: |
+              import jenkins.model.Jenkins
+              def pluginManager = Jenkins.instance.pluginManager
+              def updateCenter = Jenkins.instance.updateCenter
+              def pluginName = "sshd"
+              if (!pluginManager.getPlugin(pluginName)) {
+                println( "Installing plugin: ${pluginName}" )
+                def plugin = updateCenter.getPlugin(pluginName)
+                if (plugin) {
+                  plugin.deploy().get()
+                  println("${pluginName} plugin installed.")
+                } else {
+                    println("Plugin ${pluginName} not found in Update Center.")
+                }
+              } else {
+                  println(" Plugin ${pluginName} is already installed.")
+              }
           - script: |
               pipelineJob('example-pipeline') {
                 definition {
